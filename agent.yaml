@@ -1,0 +1,21 @@
+# Microsoft Foundry Hosted Agent Definition (Container / ACR)
+kind: hosted
+name: complaint-copilot
+description: >
+  US Retail Banking Complaint Resolution Copilot (Reg E § 1005.11 & Reg Z § 1026.13)
+  with deterministic holiday deadlines, SQLite persistence, Teams HITL approval, and hosted MCP server (/mcp).
+container:
+  image: complaincopilot.azurecr.io/complaint-copilot:latest
+  resources:
+    cpu: "1"
+    memory: 2Gi
+protocols:
+  - protocol: responses
+    version: 1.0.0
+environment_variables:
+  - name: PORT
+    value: "8088"
+  - name: AZURE_OPENAI_DEPLOYMENT_NAME
+    value: ${AZURE_OPENAI_DEPLOYMENT_NAME}
+  - name: AZURE_SEARCH_INDEX_NAME
+    value: ${AZURE_SEARCH_INDEX_NAME}

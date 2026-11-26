@@ -1,0 +1,126 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    }
+  },
+  "triggers": {
+    "manual": {
+      "type": "Request",
+      "kind": "Http",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "complaint_id": { "type": "string" },
+            "risk_score": { "type": "number" },
+            "risk_reasons": { "type": "array", "items": { "type": "string" } },
+            "draft_reply": { "type": "string" },
+            "due_date": { "type": "string" },
+            "cited_rule": { "type": "string" },
+            "product": { "type": "string" }
+          },
+          "required": ["complaint_id", "risk_score", "draft_reply", "due_date"]
+        }
+      }
+    }
+  },
+  "actions": {
+    "Post_Adaptive_Card_and_Wait_for_Response": {
+      "type": "OpenApiConnectionWebhook",
+      "inputs": {
+        "host": {
+          "connectionName": "shared_teams",
+          "operationId": "PostCardAndWaitForResponse",
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams"
+        },
+        "parameters": {
+          "poster": "Flow bot",
+          "location": "Channel",
+          "body/recipient/groupId": "bank-compliance-officers-team-id",
+          "body/recipient/channelId": "high-risk-disputes-channel-id",
+          "body/messageBody": {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.5",
+            "body": [
+              {
+                "type": "Container",
+                "style": "attention",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "\u26a0 HIGH-RISK DISPUTE APPROVAL REQUIRED",
+                    "weight": "Bolder",
+                    "size": "Medium",
+                    "color": "Attention"
+                  }
+                ]
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  { "title": "Complaint ID:", "value": "@{triggerBody()?['complaint_id']}" },
+                  { "title": "Product:", "value": "@{triggerBody()?['product']}" },
+                  { "title": "Risk Score:", "value": "@{triggerBody()?['risk_score']}" },
+                  { "title": "Statutory Deadline:", "value": "@{triggerBody()?['due_date']}" },
+                  { "title": "Governing Rule:", "value": "@{triggerBody()?['cited_rule']}" }
+                ]
+              },
+              {
+                "type": "TextBlock",
+                "text": "Proposed Resolution Letter:",
+                "weight": "Bolder"
+              },
+              {
+                "type": "TextBlock",
+                "text": "@{triggerBody()?['draft_reply']}",
+                "wrap": true
+              },
+              {
+                "type": "Input.Text",
+                "id": "reviewer_comments",
+                "placeholder": "Enter mandatory approval/rejection rationale...",
+                "isMultiline": true
+              }
+            ],
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\u2714 Approve Letter",
+                "style": "positive",
+                "data": { "decision": "Approve", "complaint_id": "@{triggerBody()?['complaint_id']}" }
+              },
+              {
+                "type": "Action.Submit",
+                "title": "\u2716 Reject / Request Revisions",
+                "style": "destructive",
+                "data": { "decision": "Reject", "complaint_id": "@{triggerBody()?['complaint_id']}" }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "Send_Decision_Back_to_Copilot_Webhook": {
+      "type": "Http",
+      "inputs": {
+        "method": "POST",
+        "uri": "https://complaint-copilot-api.azurewebsites.net/api/approval",
+        "headers": { "Content-Type": "application/json" },
+        "body": {
+          "complaint_id": "@{triggerBody()?['complaint_id']}",
+          "action": "@{body('Post_Adaptive_Card_and_Wait_for_Response')?['data']?['decision']}",
+          "reviewer": "@{body('Post_Adaptive_Card_and_Wait_for_Response')?['responder']?['displayName']}",
+          "comments": "@{body('Post_Adaptive_Card_and_Wait_for_Response')?['data']?['reviewer_comments']}"
+        }
+      },
+      "runAfter": {
+        "Post_Adaptive_Card_and_Wait_for_Response": ["Succeeded"]
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "mappings": [
+    {
+      "cfpb_product": "Credit card",
+      "governing_regulation": "Regulation Z",
+      "section": "12 CFR § 1026.13",
+      "rule_scope": "Credit card billing errors and dispute resolution procedures under the Truth in Lending Act (TILA) / Fair Credit Billing Act (FCBA)",
+      "primary_url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1026/subpart-B/section-1026.13"
+    },
+    {
+      "cfpb_product": "Checking or savings account",
+      "governing_regulation": "Regulation E",
+      "section": "12 CFR § 1005.11",
+      "rule_scope": "Electronic fund transfer error resolution, debit card disputes, ATM discrepancies, and unauthorized ACH transfers under the Electronic Fund Transfer Act (EFTA)",
+      "primary_url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1005/subpart-A/section-1005.11"
+    },
+    {
+      "cfpb_product": "Money transfer, virtual currency, or money service",
+      "governing_regulation": "Regulation E",
+      "section": "12 CFR § 1005.11",
+      "rule_scope": "Consumer electronic transfers, mobile wallet debits, peer-to-peer transfers, and remittance error resolution under the Electronic Fund Transfer Act (EFTA)",
+      "primary_url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1005/subpart-A/section-1005.11"
+    }
+  ]
+}

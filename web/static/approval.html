@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dispute Approval & Microsoft Teams HITL Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px 16px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    /* Teams Routing Banner */
+    .teams-meta-bar {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #464eb8;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 12.5px;
+      align-items: center;
+    }
+    .teams-meta-bar .tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .teams-meta-bar strong {
+      color: #475569;
+    }
+    .teams-meta-bar span.val {
+      color: #0f172a;
+      font-weight: 600;
+    }
+    .channel-pill {
+      background: #f3f2fd;
+      color: #464eb8;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 11.5px;
+      border: 1px solid #dcd9fa;
+    }
+
+    /* Main Container Cards */
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .card-header h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #0f172a;
+      background: #ffffff;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #464eb8;
+    }
+
+    .details-grid {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .item strong {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 2px;
+    }
+    .item span {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .pill-high { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .pill-approved { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .pill-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .pill-none { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease;
+    }
+    .btn-approve { background: #16a34a; color: #ffffff; }
+    .btn-approve:hover { background: #15803d; }
+    .btn-reject { background: #dc2626; color: #ffffff; }
+    .btn-reject:hover { background: #b91c1c; }
+
+    .empty-queue-box {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 32px 16px;
+      text-align: center;
+      color: #64748b;
+    }
+    .empty-queue-box p {
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .locked-notice {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin-top: 14px;
+      color: #15803d;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .msg-banner {
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-top: 14px;
+    }
+    .msg-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .msg-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Teams Dynamic Routing Bar -->
+    <div class="teams-meta-bar" id="routing-meta-bar">
+      <div class="tag">
+        <strong>Teams Target Channel:</strong>
+        <span class="channel-pill" id="route-channel">#compliance-queue</span>
+      </div>
+      <div class="tag">
+        <strong>Assigned Queue:</strong>
+        <span class="val" id="route-queue">Awaiting Submissions</span>
+      </div>
+      <div class="tag">
+        <strong>Dispatch Protocol:</strong>
+        <span class="val" id="route-protocol">Power Automate (Adaptive Card v1.5)</span>
+      </div>
+    </div>
+
+    <!-- Officer Dispute Review Queue -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Dispute Review Queue</h2>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" onclick="clearQueue()" title="Clear all cases" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 8px; font-size: 11.5px; cursor: pointer; color: #64748b; font-weight: 600;">
+            🗑 Clear Queue
+          </button>
+          <span id="case-status-badge" class="pill pill-none">0 Pending</span>
+        </div>
+      </div>
+
+      <!-- Case Selector & Completed Toggle -->
+      <div class="form-group" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 12px;">
+        <div style="flex: 1;">
+          <label for="case-select">Select Pending Dispute to Review:</label>
+          <select id="case-select" onchange="loadSelectedCase()">
+            <option value="">No pending disputes in queue</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 6px;">
+          <label style="font-size: 11.5px; font-weight: 500; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="toggle-completed" onchange="fetchCases()">
+            Include completed
+          </label>
+        </div>
+      </div>
+
+      <!-- Empty State Notice -->
+      <div id="empty-state" class="empty-queue-box">
+        <div style="font-size: 24px; margin-bottom: 4px;">📭</div>
+        <strong style="color: #334155; font-size: 14px;">No Pending Disputes in Queue</strong>
+        <p>Submit a customer dispute on the <a href="/" style="color: #464eb8; font-weight: 600; text-decoration: underline;">Customer Intake Portal</a>. Any high-risk cases will automatically appear here for officer approval.</p>
+      </div>
+
+      <!-- Case Content Box (Hidden when empty) -->
+      <div id="case-content" class="hidden">
+        <!-- Summary Grid -->
+        <div class="details-grid">
+          <div class="item">
+            <strong>Complaint ID</strong>
+            <span id="c-id">-</span>
+          </div>
+          <div class="item">
+            <strong>Risk Level</strong>
+            <span id="c-risk"><span class="pill pill-high">High</span></span>
+          </div>
+          <div class="item">
+            <strong>Product & Issue</strong>
+            <span id="c-product-issue">-</span>
+          </div>
+          <div class="item">
+            <strong>Statutory Deadline</strong>
+            <span id="c-deadline" style="color: #15803d;">-</span>
+          </div>
+          <div class="item" style="grid-column: span 2;">
+            <strong>Governing Rule & Paragraph</strong>
+            <span id="c-rule">-</span>
+            <a id="c-link" href="#" target="_blank" style="margin-left: 8px; font-size: 11px; color: #464eb8; text-decoration: underline;">View Regulation ↗</a>
+          </div>
+        </div>
+
+        <!-- Customer Narrative -->
+        <div class="form-group">
+          <label>Customer Complaint:</label>
+          <div id="c-narrative" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; font-size: 12.5px; color: #334155; font-style: italic;">
+            -
+          </div>
+        </div>
+
+        <!-- Draft Reply -->
+        <div class="form-group">
+          <label>Draft Customer Reply Letter:</label>
+          <textarea id="c-reply" rows="4"></textarea>
+        </div>
+
+        <!-- Reviewer Action (Shown only for Pending cases) -->
+        <div id="action-panel" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px; margin-top: 14px;">
+          <div style="display: flex; gap: 12px; margin-bottom: 10px;">
+            <div style="flex: 1;">
+              <label for="rev-name">Reviewer Name:</label>
+              <input type="text" id="rev-name" placeholder="Enter your name / officer ID" required>
+            </div>
+            <div style="flex: 2;">
+              <label for="rev-comment">Reviewer Comment:</label>
+              <input type="text" id="rev-comment" placeholder="Enter decision rationale (mandatory for rejection)...">
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn btn-approve" onclick="submitDecision('Approved')">
+              ✔ Approve Letter
+            </button>
+            <button type="button" class="btn btn-reject" onclick="submitDecision('Rejected')">
+              ✖ Reject Letter
+            </button>
+          </div>
+        </div>
+
+        <!-- Locked Notice (Shown when viewing already completed cases) -->
+        <div id="locked-panel" class="locked-notice hidden">
+          <span>🔒</span>
+          <span id="locked-msg">This case has already been decided.</span>
+        </div>
+
+        <div id="decision-banner" class="msg-banner hidden"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let casesCache = {};
+    let currentCaseId = "";
+
+    async function fetchCases() {
+      try {
+        const res = await fetch("/api/cases");
+        const data = await res.json();
+        const select = document.getElementById("case-select");
+        select.innerHTML = "";
+
+        const showCompleted = document.getElementById("toggle-completed") ? document.getElementById("toggle-completed").checked : false;
+        const allCases = data.cases || [];
+        const pendingCases = allCases.filter(c => (c.approval ? c.approval.decision : "Pending") === "Pending");
+        const casesToDisplay = showCompleted ? allCases : pendingCases;
+
+        if (casesToDisplay.length === 0) {
+          currentCaseId = null;
+          if (allCases.length > 0 && !showCompleted) {
+            select.innerHTML = '<option value="">All caught up! 0 pending reviews</option>';
+            document.getElementById("empty-state").innerHTML = `
+              <div style="font-size: 26px; margin-bottom: 4px;">🎉</div>
+              <strong style="color: #15803d; font-size: 14px;">All Caught Up!</strong>
+              <p>All submitted disputes have been reviewed and decided. Check "Include completed" above to review past decisions, or submit a new dispute on the <a href="/" style="color: #464eb8; font-weight: 600; text-decoration: underline;">Customer Intake Portal</a>.</p>
+            `;
+          } else {
+            select.innerHTML = '<option value="">No dispute requests in queue</option>';
+            document.getElementById("empty-state").innerHTML = `
+              <div style="font-size: 24px; margin-bottom: 4px;">📭</div>
+              <strong style="color: #334155; font-size: 14px;">No Pending Disputes in Queue</strong>
+              <p>Submit a customer dispute on the <a href="/" style="color: #464eb8; font-weight: 600; text-decoration: underline;">Customer Intake Portal</a>. Any high-risk cases will automatically appear here for officer approval.</p>
+            `;
+          }
+          document.getElementById("empty-state").classList.remove("hidden");
+          document.getElementById("case-content").classList.add("hidden");
+          document.getElementById("case-status-badge").className = "pill pill-none";
+          document.getElementById("case-status-badge").textContent = showCompleted ? "No Cases" : "0 Pending";
+          document.getElementById("route-channel").textContent = "#compliance-queue";
+          document.getElementById("route-queue").textContent = "Queue Clear";
+          return;
+        }
+
+        document.getElementById("empty-state").classList.add("hidden");
+        document.getElementById("case-content").classList.remove("hidden");
+
+        casesCache = {};
+        casesToDisplay.forEach((c) => {
+          casesCache[c.case_id] = c;
+          const opt = document.createElement("option");
+          opt.value = c.case_id;
+          const risk = c.triage ? c.triage.risk_level : "Normal";
+          const status = c.approval ? c.approval.decision : "Pending";
+          opt.textContent = `${c.case_id} [${status}] - ${c.triage ? c.triage.product : ""}`;
+          select.appendChild(opt);
+        });
+
+        loadSelectedCase();
+      } catch (err) {
+        console.error("Error loading cases:", err);
+      }
+    }
+
+    function loadSelectedCase() {
+      const select = document.getElementById("case-select");
+      currentCaseId = select.value;
+      const c = casesCache[currentCaseId];
+      if (!c) return;
+
+      const risk = c.triage ? c.triage.risk_level : "Normal";
+      const status = c.approval ? c.approval.decision : "Pending";
+      const approver = c.approval ? c.approval.approver : "";
+      const comments = c.approval ? c.approval.comments : "";
+      const product = c.triage ? c.triage.product : "";
+      const issue = c.triage ? c.triage.issue : "";
+      const deadline = c.deadline ? (c.deadline.due_date_formatted || c.deadline.due_date) : "N/A";
+      const rule = c.rule ? c.rule.citation : "N/A";
+      const ruleUrl = c.rule ? c.rule.url : "#";
+      const narrative = c.complaint_input ? c.complaint_input.narrative : "";
+      const reply = c.draft_reply || "";
+
+      // Dynamic Teams Routing Display
+      let targetChannel = "#general-compliance";
+      let targetQueue = "General Compliance Queue";
+      if (product.toLowerCase().includes("credit")) {
+        targetChannel = "#reg-z-billing-disputes";
+        targetQueue = "Credit Card Dispute Officers (@reg-z-team)";
+      } else if (product.toLowerCase().includes("checking") || product.toLowerCase().includes("money transfer")) {
+        targetChannel = "#reg-e-disputes";
+        targetQueue = "EFT Investigation Specialists (@reg-e-team)";
+      }
+      if (c.triage && c.triage.risk_reasons && c.triage.risk_reasons.some(r => r.includes("$1,000") || r.includes("legal") || r.includes("scam"))) {
+        targetChannel = "#high-risk-escalations";
+        targetQueue = "Senior Fraud & Compliance Leads (@lead-officers)";
+      }
+
+      document.getElementById("route-channel").textContent = targetChannel;
+      document.getElementById("route-queue").textContent = targetQueue;
+
+      // Fill Portal View
+      document.getElementById("c-id").textContent = currentCaseId;
+      document.getElementById("c-product-issue").textContent = `${product} — ${issue}`;
+      document.getElementById("c-deadline").textContent = deadline;
+      document.getElementById("c-rule").textContent = rule;
+      document.getElementById("c-link").href = ruleUrl;
+      document.getElementById("c-narrative").textContent = narrative;
+      document.getElementById("c-reply").value = reply;
+
+      // Reset comment field
+      document.getElementById("rev-comment").value = "";
+
+      // Decision State Logic (Lock if already decided)
+      const isDecided = (status === "Approved" || status === "Rejected");
+      if (isDecided) {
+        document.getElementById("action-panel").classList.add("hidden");
+        document.getElementById("locked-panel").classList.remove("hidden");
+        document.getElementById("locked-msg").textContent = `Decision Finalized: Marked ${status.toUpperCase()} by ${approver}. Note: "${comments}".`;
+      } else {
+        document.getElementById("action-panel").classList.remove("hidden");
+        document.getElementById("locked-panel").classList.add("hidden");
+      }
+
+      // Status Badges
+      const badge = document.getElementById("case-status-badge");
+      if (status === "Approved") {
+        badge.className = "pill pill-approved";
+        badge.textContent = "✔ Approved";
+      } else if (status === "Rejected") {
+        badge.className = "pill pill-rejected";
+        badge.textContent = "✖ Rejected";
+      } else {
+        badge.className = "pill pill-high";
+        badge.textContent = "Pending Review";
+      }
+
+      document.getElementById("decision-banner").classList.add("hidden");
+    }
+
+    async function submitDecision(decision) {
+      if (!currentCaseId) return;
+      const reviewer = document.getElementById("rev-name").value.trim();
+      if (!reviewer) {
+        alert("Please enter a reviewer name before submitting decision.");
+        document.getElementById("rev-name").focus();
+        return;
+      }
+      const comments = document.getElementById("rev-comment").value.trim();
+      if (decision === "Rejected" && !comments) {
+        alert("Please provide reviewer comments explaining the rejection rationale.");
+        document.getElementById("rev-comment").focus();
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/approval", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            complaint_id: currentCaseId,
+            decision: decision,
+            action: decision,
+            approver: reviewer,
+            reviewer: reviewer,
+            comments: comments || `${decision} by ${reviewer}`
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || `Server error (${res.status})`);
+        }
+        const result = await res.json();
+        const banner = document.getElementById("decision-banner");
+        banner.className = decision === "Approved" ? "msg-banner msg-success" : "msg-banner msg-danger";
+        banner.textContent = `✔ Case ${currentCaseId} marked ${decision.toUpperCase()} by ${reviewer}. Case removed from pending queue!`;
+        banner.classList.remove("hidden");
+
+        if (casesCache[currentCaseId]) {
+          casesCache[currentCaseId].approval = {
+            decision: decision,
+            approver: reviewer,
+            comments: comments
+          };
+        }
+
+        setTimeout(fetchCases, 700);
+      } catch (err) {
+        alert("Error saving decision: " + err.message);
+      }
+    }
+
+    async function clearQueue() {
+      if (confirm("Clear all cases from the queue?")) {
+        await fetch("/api/cases/clear", { method: "POST" });
+        fetchCases();
+      }
+    }
+
+    fetchCases();
+  </script>
+</body>
+</html>

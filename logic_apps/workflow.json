@@ -1,0 +1,131 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-05-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "string",
+      "defaultValue": "la-complaint-intake-processor",
+      "metadata": {
+        "description": "Name of the Azure Logic App for complaint intake orchestration."
+      }
+    },
+    "functionAppUrl": {
+      "type": "string",
+      "defaultValue": "https://func-complaint-deadline.azurewebsites.net/api/calculate_deadline",
+      "metadata": {
+        "description": "Azure Function HTTP endpoint for statutory deadline calculation."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "[parameters('logicAppName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "triggers": {
+            "When_a_complaint_is_received": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "complaint_id": { "type": "string" },
+                    "customer_name": { "type": "string" },
+                    "product": { "type": "string" },
+                    "narrative": { "type": "string" },
+                    "error_reported_date": { "type": "string" },
+                    "disputed_amount": { "type": "number" },
+                    "is_new_account": { "type": "boolean" }
+                  },
+                  "required": ["complaint_id", "product", "narrative", "error_reported_date"]
+                }
+              }
+            }
+          },
+          "actions": {
+            "Invoke_Azure_AI_Content_Safety": {
+              "type": "Http",
+              "inputs": {
+                "method": "POST",
+                "uri": "https://complaint-copilot.cognitiveservices.azure.com/contentsafety/text:analyze?api-version=2024-09-01",
+                "headers": {
+                  "Ocp-Apim-Subscription-Key": "@body('Get_KeyVault_Secret')?['value']",
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "text": "@triggerBody()?['narrative']"
+                }
+              },
+              "runAfter": {}
+            },
+            "Call_Agent_Framework_Orchestrator": {
+              "type": "Http",
+              "inputs": {
+                "method": "POST",
+                "uri": "https://complaint-copilot-api.azurewebsites.net/api/process",
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": "@triggerBody()"
+              },
+              "runAfter": {
+                "Invoke_Azure_AI_Content_Safety": ["Succeeded"]
+              }
+            },
+            "Condition_High_Risk": {
+              "type": "If",
+              "expression": {
+                "or": [
+                  { "greater": ["@body('Call_Agent_Framework_Orchestrator')?['risk_assessment']?['risk_score']", 0.70] },
+                  { "equals": ["@body('Call_Agent_Framework_Orchestrator')?['risk_assessment']?['risk_level']", "High"] }
+                ]
+              },
+              "actions": {
+                "Trigger_Power_Automate_Teams_Approval": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "https://prod-00.eastus.logic.azure.com:443/workflows/power-automate-hitl-approval/triggers/manual/paths/invoke",
+                    "headers": { "Content-Type": "application/json" },
+                    "body": {
+                      "complaint_id": "@triggerBody()?['complaint_id']",
+                      "risk_score": "@body('Call_Agent_Framework_Orchestrator')?['risk_assessment']?['risk_score']",
+                      "draft_reply": "@body('Call_Agent_Framework_Orchestrator')?['draft_resolution_letter']",
+                      "due_date": "@body('Call_Agent_Framework_Orchestrator')?['compliance_deadline']?['target_deadline_date']",
+                      "cited_rule": "@body('Call_Agent_Framework_Orchestrator')?['compliance_deadline']?['rule_id']"
+                    }
+                  }
+                }
+              },
+              "else": {
+                "actions": {
+                  "Auto_Dispatch_Customer_Letter": {
+                    "type": "Http",
+                    "inputs": {
+                      "method": "POST",
+                      "uri": "https://complaint-copilot-api.azurewebsites.net/api/dispatch",
+                      "body": {
+                        "complaint_id": "@triggerBody()?['complaint_id']",
+                        "status": "Auto-Dispatched",
+                        "letter": "@body('Call_Agent_Framework_Orchestrator')?['draft_resolution_letter']"
+                      }
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Call_Agent_Framework_Orchestrator": ["Succeeded"]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

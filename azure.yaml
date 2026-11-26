@@ -1,0 +1,30 @@
+# Microsoft AI Foundry Hosted Agent Specification (Container Deploy via ACR)
+name: complaint-resolution-copilot
+metadata:
+  template: complaint-resolution-copilot@1.0.0
+
+services:
+  complaint-copilot:
+    project: .
+    host: azure.ai.agent
+    kind: hosted
+    name: complaint-copilot
+    language: docker
+    docker:
+      remoteBuild: false
+      imagePassthrough: true
+    image: complaincopilot.azurecr.io/complaint-copilot:latest
+    container:
+      resources:
+        cpu: "1"
+        memory: 2Gi
+    protocols:
+      - protocol: responses
+        version: 1.0.0
+    environmentVariables:
+      - name: PORT
+        value: "8088"
+      - name: AZURE_OPENAI_DEPLOYMENT_NAME
+        value: ${AZURE_OPENAI_DEPLOYMENT_NAME}
+      - name: AZURE_SEARCH_INDEX_NAME
+        value: ${AZURE_SEARCH_INDEX_NAME}

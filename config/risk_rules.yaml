@@ -1,0 +1,78 @@
+version: "1.0.0"
+risk_levels:
+  HIGH: "High"
+  NORMAL: "Normal"
+
+rules:
+  # Rule 1: Disputed amount exceeds monetary threshold
+  monetary_threshold:
+    enabled: true
+    amount_usd: 1000.00
+    risk_level: "High"
+    reason: "Disputed transaction amount exceeds $1,000 regulatory high-exposure threshold"
+
+  # Rule 2: Suspected Identity Theft or Unauthorized Account Creation
+  identity_theft_unauthorized_account:
+    enabled: true
+    risk_level: "High"
+    trigger_issues:
+      - "Card opened without my consent or knowledge"
+      - "Account opened without my consent or knowledge"
+      - "Sent card you never applied for"
+    trigger_keywords:
+      - "identity theft"
+      - "never applied"
+      - "fraudulently opened"
+      - "without my consent"
+      - "stolen ssn"
+      - "stolen identity"
+    reason: "Suspected identity theft or fraudulent account origin"
+
+  # Rule 3: Account Freeze, Debanking, or Severe Loss of Access
+  debanking_fund_deprivation:
+    enabled: true
+    risk_level: "High"
+    trigger_issues:
+      - "Debanking"
+      - "Company closed your account"
+      - "Can't close your account"
+      - "Funds not received from closed account"
+    trigger_keywords:
+      - "debanked"
+      - "funds frozen"
+      - "withholding funds"
+      - "cannot pay rent"
+      - "living expenses"
+    reason: "Account frozen, debanked, or severe deprivation of essential consumer funds"
+
+  # Rule 4: Systemic or Severe Scam / Fraud Drain
+  scam_wire_drain:
+    enabled: true
+    risk_level: "High"
+    trigger_issues:
+      - "Fraud or scam"
+      - "Unauthorized transactions or other transaction problem"
+    trigger_keywords:
+      - "scam"
+      - "drained"
+      - "phishing"
+      - "impersonation"
+      - "unauthorized wire"
+      - "account takeover"
+    reason: "Severe fraud incident, unauthorized account takeover, or impersonation scam"
+
+  # Rule 5: Vulnerable Consumer Group Protections
+  vulnerable_consumer:
+    enabled: true
+    risk_level: "High"
+    trigger_tags:
+      - "Older American"
+      - "Servicemember"
+    condition: "tag_match_and_disputed_amount_over_500"
+    amount_threshold: 500.00
+    reason: "Protected consumer cohort (Older American / Servicemember) with material dispute"
+
+  # Default fallback
+  default_rule:
+    risk_level: "Normal"
+    reason: "Standard operational inquiry or routine dispute within normal handling parameters"

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dispute Intake | Retail Banking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 40px 16px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 28px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .card-header {
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 14px;
+      margin-bottom: 22px;
+    }
+    .card-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .card-header p {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: #0f172a;
+      background: #ffffff;
+      transition: border-color 0.15s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+    }
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-row > div {
+      flex: 1;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #475569;
+      cursor: pointer;
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s ease;
+      width: 100%;
+    }
+    .btn-primary {
+      background: #0284c7;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #0369a1;
+    }
+    .btn-primary:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+    .btn-outline {
+      background: #ffffff;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      margin-top: 16px;
+    }
+    .btn-outline:hover {
+      background: #f8fafc;
+    }
+    .hidden {
+      display: none !important;
+    }
+    /* Customer Confirmation Card */
+    .success-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #dcfce7;
+      color: #15803d;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+    }
+    .receipt-grid {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 16px;
+      margin: 16px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .receipt-item strong {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 2px;
+    }
+    .receipt-item span {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .resolution-banner {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      padding: 14px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .resolution-banner .lbl {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #166534;
+    }
+    .resolution-banner .date {
+      font-size: 18px;
+      font-weight: 800;
+      color: #15803d;
+      margin-top: 2px;
+    }
+    .notice-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #334155;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Intake Form -->
+    <div id="intake-card" class="card">
+      <div class="card-header">
+        <h2>Submit an Account Dispute</h2>
+        <p>Consumer Protection & Dispute Resolution Department</p>
+      </div>
+
+      <form id="dispute-form" onsubmit="handleDisputeSubmit(event)">
+        <div class="form-group">
+          <label for="c-product">Financial Product:</label>
+          <select id="c-product" required>
+            <option value="" disabled selected>Select financial product...</option>
+            <option value="Checking or savings account">Checking or savings account</option>
+            <option value="Credit card">Credit card</option>
+            <option value="Money transfer, virtual currency, or money service">Money transfer / Remittance service</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="c-narrative">Description of Disputed Transaction:</label>
+          <textarea id="c-narrative" rows="4" required placeholder="Describe what occurred, transaction details, and why this is an error..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label for="c-amount">Disputed Amount ($ USD):</label>
+            <input type="number" id="c-amount" placeholder="0.00" step="0.01" required>
+          </div>
+          <div>
+            <label for="c-date">Date You Discovered the Error:</label>
+            <input type="date" id="c-date" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="c-new-account">
+            <span>This account was opened within the last 30 days</span>
+          </label>
+        </div>
+
+        <button type="submit" id="btn-submit" class="btn btn-primary">
+          Submit Dispute
+        </button>
+      </form>
+    </div>
+
+    <!-- Customer Confirmation View (Shown on submit) -->
+    <div id="confirmation-card" class="card hidden">
+      <div class="success-badge" id="status-badge">
+        <span>✔</span> Dispute Submitted Successfully
+      </div>
+
+      <div id="guardrail-banner" class="hidden" style="background:#fef2f2;border:1px solid #fecaca;border-left:4px solid #dc2626;border-radius:6px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:#7f1d1d;">
+        <div style="font-weight:700;margin-bottom:4px;">🛡 Guardrail Triggered: Prompt Injection Neutralized</div>
+        <div><strong>Threats Flagged:</strong> <span id="gr-threats"></span></div>
+        <div><strong>Action:</strong> <span id="gr-action"></span></div>
+        <div style="margin-top:4px;color:#991b1b;"><strong>Sanitized Text:</strong> <span id="gr-sanitized"></span></div>
+      </div>
+
+      <div id="pii-banner" class="hidden" style="background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #d97706;border-radius:6px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:#78350f;">
+        <div style="font-weight:700;margin-bottom:4px;">🔒 PII Redacted Before AI Processing</div>
+        <div><strong>Redacted Fields:</strong> <span id="pii-fields"></span></div>
+        <div style="margin-top:4px;color:#92400e;"><strong>Sanitized Text:</strong> <span id="pii-sanitized"></span></div>
+      </div>
+
+      <h2 style="font-size: 18px; font-weight: 700; color: #0f172a;">Dispute Acknowledgment Notice</h2>
+      <p style="font-size: 13px; color: #64748b; margin-top: 4px;">
+        We have received your dispute and our investigation team has been assigned.
+      </p>
+
+      <div class="receipt-grid">
+        <div class="receipt-item">
+          <strong>Reference Number:</strong>
+          <span id="ack-case-id">CASE-33358185</span>
+        </div>
+        <div class="receipt-item">
+          <strong>Disputed Amount:</strong>
+          <span id="ack-amount">$400.00</span>
+        </div>
+        <div class="receipt-item">
+          <strong>Product:</strong>
+          <span id="ack-product">Checking or savings account</span>
+        </div>
+        <div class="receipt-item">
+          <strong>Date Reported:</strong>
+          <span id="ack-date">March 2, 2026</span>
+        </div>
+      </div>
+
+      <div class="resolution-banner" id="resolution-banner">
+        <div class="lbl">Target Investigation Resolution Date</div>
+        <div class="date" id="ack-due-date">March 16, 2026</div>
+      </div>
+
+      <label style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">Official Communication from Bank:</label>
+      <div class="notice-box" id="ack-reply-text">
+        Dear Valued Customer, We have received your notice of error regarding your checking or savings account. Under federal consumer protection guidelines, our inquiry has begun. If additional time is required, provisional credit will be credited to your account.
+      </div>
+
+      <button type="button" class="btn btn-outline" onclick="resetForm()">
+        Submit Another Dispute
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    async function handleDisputeSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById("btn-submit");
+      btn.disabled = true;
+      btn.textContent = "Submitting dispute...";
+
+      const complaintId = "CASE-" + Math.floor(10000000 + Math.random() * 90000000);
+      const amountVal = parseFloat(document.getElementById("c-amount").value) || 0.0;
+      const dateVal = document.getElementById("c-date").value;
+      const productVal = document.getElementById("c-product").value;
+      const narrativeVal = document.getElementById("c-narrative").value;
+      const isNewVal = document.getElementById("c-new-account").checked;
+
+      const payload = {
+        complaint_id: complaintId,
+        narrative: narrativeVal,
+        disputed_amount: amountVal,
+        error_reported_date: dateVal,
+        is_new_account: isNewVal,
+        auto_approve_high_risk: false
+      };
+
+      try {
+        const res = await fetch("/api/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        // Show Customer Acknowledgment
+        document.getElementById("intake-card").classList.add("hidden");
+        document.getElementById("confirmation-card").classList.remove("hidden");
+
+        document.getElementById("ack-case-id").textContent = data.case_id;
+        document.getElementById("ack-amount").textContent = "$" + amountVal.toFixed(2);
+        document.getElementById("ack-product").textContent = productVal;
+        document.getElementById("ack-date").textContent = dateVal;
+        document.getElementById("ack-due-date").textContent = data.deadline.due_date_formatted;
+        document.getElementById("ack-reply-text").textContent = data.draft_reply;
+
+        const badge = document.getElementById("status-badge");
+        const resBanner = document.getElementById("resolution-banner");
+        if (data.rule && data.rule.status === "NEEDS_SPECIALIST_REVIEW") {
+          badge.innerHTML = "<span>⚠</span> Out of Scope — Needs Specialist Review";
+          badge.style.background = "#fef3c7";
+          badge.style.color = "#92400e";
+          resBanner.style.display = "none";
+        } else {
+          badge.innerHTML = "<span>✔</span> Dispute Submitted Successfully";
+          badge.style.background = "#dcfce7";
+          badge.style.color = "#15803d";
+          resBanner.style.display = "block";
+        }
+
+        const gr = data.complaint_input && data.complaint_input.guardrail;
+        const grBanner = document.getElementById("guardrail-banner");
+        if (gr && !gr.is_safe) {
+          document.getElementById("gr-threats").textContent = (gr.flagged_threats || []).join(", ");
+          document.getElementById("gr-action").textContent = gr.guardrail_action || "NEUTRALIZED";
+          document.getElementById("gr-sanitized").textContent = gr.sanitized_narrative || "";
+          grBanner.classList.remove("hidden");
+          grBanner.style.display = "block";
+        } else {
+          grBanner.classList.add("hidden");
+          grBanner.style.display = "none";
+        }
+
+        const piiBanner = document.getElementById("pii-banner");
+        if (gr && gr.redacted_pii && gr.redacted_pii.length > 0) {
+          document.getElementById("pii-fields").textContent = gr.redacted_pii.join(", ");
+          document.getElementById("pii-sanitized").textContent = gr.sanitized_narrative || "";
+          piiBanner.classList.remove("hidden");
+          piiBanner.style.display = "block";
+        } else {
+          piiBanner.classList.add("hidden");
+          piiBanner.style.display = "none";
+        }
+
+      } catch (err) {
+        alert("Error submitting dispute: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Submit Dispute";
+      }
+    }
+
+    function resetForm() {
+      document.getElementById("dispute-form").reset();
+      document.getElementById("confirmation-card").classList.add("hidden");
+      document.getElementById("intake-card").classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>

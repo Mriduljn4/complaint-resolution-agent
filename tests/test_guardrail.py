@@ -27,7 +27,7 @@ def test_orchestrator_handles_adversarial_injection_safely():
         "error_reported_date": "2026-11-20",
         "is_new_account": False,
         "disputed_amount": 320.0,
-        "Company": "Bank of America"
+        "Company": "Financial Institution"
     }
 
     case_record = orchestrator.process_complaint(complaint_dict)

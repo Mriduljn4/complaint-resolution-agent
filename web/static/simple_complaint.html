@@ -193,6 +193,8 @@
       line-height: 1.5;
       color: #334155;
       margin-bottom: 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
   </style>
 </head>
@@ -346,7 +348,15 @@
         document.getElementById("ack-product").textContent = productVal;
         document.getElementById("ack-date").textContent = dateVal;
         document.getElementById("ack-due-date").textContent = data.deadline.due_date_formatted;
-        document.getElementById("ack-reply-text").textContent = data.draft_reply;
+        const escapedReply = (data.draft_reply || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+        const linkedReply = escapedReply.replace(
+          /(https?:\/\/[^\s<>"']+?)([.,;)]*(?=\s|$))/g,
+          '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">$1</a>$2'
+        );
+        document.getElementById("ack-reply-text").innerHTML = linkedReply;
 
         const badge = document.getElementById("status-badge");
         const resBanner = document.getElementById("resolution-banner");

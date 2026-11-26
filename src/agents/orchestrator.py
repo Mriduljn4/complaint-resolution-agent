@@ -128,7 +128,7 @@ class ComplaintCopilotOrchestrator:
                 "transaction_type": transaction_type,
                 "disputed_amount": disputed_amount,
                 "tags": tags,
-                "company": complaint_dict.get("Company", "National Retail Bank"),
+                "company": complaint_dict.get("Company", "Financial Institution"),
                 "guardrail": guardrail_result
             },
             "triage": {

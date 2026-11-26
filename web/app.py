@@ -36,7 +36,7 @@ class ComplaintRequest(BaseModel):
     disputed_amount: Optional[float] = None
     transaction_type: Optional[str] = None
     tags: Optional[str] = None
-    company: Optional[str] = "National Retail Bank"
+    company: Optional[str] = "Financial Institution"
     auto_approve_high_risk: Optional[bool] = False
 
 
@@ -116,7 +116,7 @@ async def process_complaint(req: ComplaintRequest):
             "disputed_amount": req.disputed_amount,
             "transaction_type": req.transaction_type,
             "Tags": req.tags,
-            "Company": req.company or "National Retail Bank",
+            "Company": req.company or "Financial Institution",
         }
         res = orchestrator.process_complaint(
             complaint_dict=complaint_dict,

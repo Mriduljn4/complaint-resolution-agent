@@ -207,74 +207,53 @@ class ResolutionAgent:
         due_date_formatted: str,
         is_new_account: bool,
         risk_level: str,
-        regulation: str
+        regulation: str,
     ) -> str:
-        """
-        Drafts a plain-language, empathetic, legally compliant customer response
-        citing the governing regulation and providing next steps. Uses Azure OpenAI when available.
-        """
-        # 1. Live Azure OpenAI Generation (if connected)
+        """Draft a plain-text customer reply citing the exact rule and due date."""
         if self.azure_client:
             try:
-                system_prompt = (
-                    "You are a regulatory compliance resolution officer for a major US retail bank. "
-                    "Draft an empathetic, professional, legally compliant customer response that explicitly cites "
-                    f"the governing regulation ({citation}), states the mandatory statutory investigation completion date ({due_date_formatted}), "
-                    f"and provides official rights and next steps. "
-                    + ("Include the mandatory provisional credit disclosure under Reg E." if "Regulation E" in regulation else "Include the Fair Credit Billing Act withholding right.")
+                right_instruction = (
+                    "Explain that if the investigation takes longer than 10 business days, provisional credit for the disputed amount may be provided while the review continues (up to 45 calendar days, or 90 calendar days for new accounts, point-of-sale, or foreign transactions)."
+                    if "Regulation E" in regulation
+                    else "Explain that under Regulation Z, the customer is not required to pay the disputed amount while the billing dispute is under investigation, and it will not be reported as delinquent."
                 )
-                user_msg = f"Product: {product}\nIssue: {issue}\nStatutory Rule: {citation} ({regulation})\nInvestigation Due Date: {due_date_formatted}\nRule Link: {rule_url}"
+                system_prompt = (
+                    "You are a dispute resolution specialist. Write a clear, polite, well-structured plain-text email reply (no markdown **bold**). "
+                    "Start with a 'Subject:' line, greet with 'Dear Valued Customer,', and sign off with 'Sincerely,\nCustomer Dispute Resolution Team'. "
+                    "Do NOT use any personal names, specific bank names, or bracketed placeholders like [Your Name] or [Bank Name]. "
+                    f"Cite {citation} ({regulation}), state the exact investigation due date ({due_date_formatted}), "
+                    f"{right_instruction} Invite the customer to share any supporting documents, and include the official rule URL."
+                )
+                user_msg = (
+                    f"Product: {product}\nIssue: {issue}\nRule: {citation} ({regulation})\n"
+                    f"Due Date: {due_date_formatted}\nRule Link: {rule_url}"
+                )
                 resp = self.azure_client.chat.completions.create(
                     model=self.deployment_name,
                     messages=[
                         {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_msg}
+                        {"role": "user", "content": user_msg},
                     ],
                     temperature=0.2,
-                    max_tokens=350
+                    max_tokens=400,
                 )
-                content = resp.choices[0].message.content
-                if content and len(content.strip()) > 50:
-                    return content.strip()
+                content = (resp.choices[0].message.content or "").strip()
+                if len(content) > 50:
+                    return content
             except Exception:
-                pass  # Fallback to verified template
+                pass
 
-        # 2. Verified Deterministic Compliance Template
-        if "Regulation E" in regulation:
-            provisional_credit_clause = (
-                "If our investigation requires extended review beyond standard timelines, "
-                "we will issue a provisional credit to your account for the disputed amount, "
-                "giving you full access to your funds while we finalize the inquiry."
-            )
-            return (
-                f"Dear Valued Customer,\n\n"
-                f"Thank you for contacting us regarding the recent issue with your {product.lower()} ({issue}). "
-                f"We take concerns regarding unauthorized transactions and account accuracy very seriously.\n\n"
-                f"In accordance with federal consumer protection standards under {citation} ({regulation}), "
-                f"our compliance team has initiated an immediate investigation. Under these federal rules, "
-                f"we are required to complete our investigation and provide you with a formal resolution no later than {due_date_formatted}.\n\n"
-                f"{provisional_credit_clause}\n\n"
-                f"You have the right under federal law to inspect and request copies of all documentary evidence relied upon during our review. "
-                f"You can review the applicable federal requirements at: {rule_url}.\n\n"
-                f"If you have additional documentation or questions in the meantime, please reply to this notice quoting your complaint reference. "
-                f"We appreciate your patience as we work to resolve this matter promptly.\n\n"
-                f"Sincerely,\n"
-                f"Consumer Complaints Resolution Department\n"
-                f"National Retail Banking Operations"
-            )
-        else: # Regulation Z
-            return (
-                f"Dear Valued Cardholder,\n\n"
-                f"We have received your billing error notice concerning your {product.lower()} account regarding: {issue}. "
-                f"We understand your concern and have formally opened a dispute investigation.\n\n"
-                f"Pursuant to the Fair Credit Billing Act and federal regulations under {citation} ({regulation}), "
-                f"we are providing this written confirmation of your dispute. Under federal guidelines, our comprehensive investigation "
-                f"will be completed and communicated to you within two complete billing cycles, but in no event later than {due_date_formatted}.\n\n"
-                f"Important Rights While Your Dispute Is Pending:\n"
-                f"- You are not required to pay the disputed portion of your bill or related finance charges while our review is active.\n"
-                f"- The disputed amount will not be reported as delinquent to credit reporting bureaus, nor will it impact your credit standing.\n\n"
-                f"To review your statutory rights under federal law, please visit: {rule_url}.\n\n"
-                f"Thank you for your relationship with our institution. We will notify you in writing the moment our findings are concluded.\n\n"
-                f"Sincerely,\n"
-                f"Credit Card Dispute & Billing Operations"
-            )
+        right_note = (
+            "If our investigation requires more than 10 business days to complete, you may be eligible for provisional credit for the disputed amount while we finish our review."
+            if "Regulation E" in regulation
+            else "While this dispute is under investigation, you are not required to pay the disputed amount, and it will not be reported as late."
+        )
+        return (
+            f"Subject: Update on Your {product} Dispute\n\n"
+            f"Dear Valued Customer,\n\n"
+            f"Thank you for contacting us regarding your {product.lower()} dispute ({issue}). We have logged your case and started our review.\n\n"
+            f"Under {citation} ({regulation}), we will investigate your claim and share our findings with you by {due_date_formatted}.\n\n"
+            f"{right_note} If you have any supporting documents (such as receipts or merchant messages), please share them to assist with our review.\n\n"
+            f"Official rule reference: {rule_url}\n\n"
+            f"Sincerely,\nCustomer Dispute Resolution Team"
+        )

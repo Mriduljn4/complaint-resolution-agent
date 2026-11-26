@@ -108,30 +108,27 @@ class RegulatoryKnowledgeBase:
         scored: List[tuple] = []
         q_lower = query.lower()
 
+        boost_rules = [
+            (("how long", "deadline", "timeline", "days", "time"), ("1005.11(c)(1)", "1026.13(c)(1)", "1026.13(c)(2)"), 2.0),
+            (("provisional", "45", "90"), ("1005.11(c)(2)",), 3.0),
+            (("no error", "explanation"), ("1005.11(d)",), 3.5),
+            (("new account",), ("1005.11(c)(3)",), 3.5),
+            (("acknowledg",), ("1026.13(c)(1)",), 4.0),
+            (("reassert",), ("1005.11(e)",), 3.5),
+            (("delinquent", "credit bureau", "pending"), ("1026.13(d)",), 3.5),
+            (("types of transactions", "qualify as billing errors"), ("1026.13(a)",), 3.5),
+        ]
+
         for doc in raw_docs:
             reg_id = doc.get("regulation_id", "REG_E")
             canon_id = self._infer_canonical_rule_id(doc, reg_id, query)
             base_score = float(doc.get("@search.score") or 1.0)
             boost = 1.0
 
-            if any(w in q_lower for w in ("how long", "deadline", "timeline", "days", "time")):
-                if canon_id in ("1005.11(c)(1)", "1026.13(c)(1)", "1026.13(c)(2)"):
-                    boost *= 2.0
-            if ("provisional" in q_lower or "45" in q_lower or "90" in q_lower) and canon_id == "1005.11(c)(2)":
-                boost *= 3.0
-            if ("no error" in q_lower or "explanation" in q_lower) and canon_id == "1005.11(d)":
-                boost *= 3.5
-            if "new account" in q_lower and canon_id == "1005.11(c)(3)":
-                boost *= 3.5
-            if "acknowledg" in q_lower and canon_id == "1026.13(c)(1)":
-                boost *= 4.0
-            if ("notify" in q_lower or "notice" in q_lower) and "acknowledg" not in q_lower and canon_id in ("1005.11(b)", "1026.13(b)"):
-                boost *= 3.5
-            if "reassert" in q_lower and canon_id == "1005.11(e)":
-                boost *= 3.5
-            if any(w in q_lower for w in ("delinquent", "credit bureau", "pending")) and canon_id == "1026.13(d)":
-                boost *= 3.5
-            if ("types of transactions" in q_lower or "qualify as billing errors" in q_lower) and canon_id == "1026.13(a)":
+            for kws, targets, factor in boost_rules:
+                if canon_id in targets and any(w in q_lower for w in kws):
+                    boost *= factor
+            if "acknowledg" not in q_lower and any(w in q_lower for w in ("notify", "notice")) and canon_id in ("1005.11(b)", "1026.13(b)"):
                 boost *= 3.5
 
             reg_label = "Regulation Z" if reg_id == "REG_Z" else "Regulation E"

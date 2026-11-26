@@ -26,7 +26,7 @@ DEMO_SCENARIOS = {
             "error_reported_date": "2026-03-02",
             "is_new_account": False,
             "disputed_amount": 400.0,
-            "Company": "Bank of America, National Association"
+            "Company": "Financial Institution"
         }
     },
     "2": {
@@ -37,7 +37,7 @@ DEMO_SCENARIOS = {
             "error_reported_date": "2026-11-20",
             "is_new_account": False,
             "disputed_amount": 1450.0,
-            "Company": "Barclays Bank Delaware"
+            "Company": "Financial Institution"
         }
     },
     "3": {
@@ -48,7 +48,7 @@ DEMO_SCENARIOS = {
             "error_reported_date": "2026-03-02",
             "is_new_account": True,
             "disputed_amount": 250.0,
-            "Company": "PNC Bank N.A."
+            "Company": "Financial Institution"
         }
     },
     "4": {
@@ -63,7 +63,7 @@ DEMO_SCENARIOS = {
             "error_reported_date": "2026-11-20",
             "is_new_account": False,
             "disputed_amount": 350.0,
-            "Company": "Bank of America"
+            "Company": "Financial Institution"
         }
     }
 }
@@ -251,7 +251,7 @@ def main():
                 "error_reported_date": err_date,
                 "is_new_account": is_new,
                 "disputed_amount": float(amt) if amt else 0.0,
-                "Company": "Retail Bank"
+                "Company": "Financial Institution"
             }
             res = orch.process_complaint(c_dict)
             print("\nResult:")
